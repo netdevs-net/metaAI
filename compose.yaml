@@ -1,0 +1,14 @@
+services:
+  metasploit:
+    image: metasploitframework/metasploit-framework
+    container_name: metasploit
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./data:/data
+    ports:
+      - "4444:4444"
+      - "8080"
+      - "55552:55552"
+      - "55553:55553"
+    entrypoint: ["./msfconsole", "-r", "docker/msfconsole.rc", "-y", "$APP_HOME/config/database.yml", "-x", "load", "mmsgrpc", "yourpassword"]
