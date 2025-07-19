@@ -1,13 +1,24 @@
-# A command that will create a new environment, install the required packages, and start the assistant.
+#!/bin/bash
+# Docker startup script for MetAIsploit Assistant
 
-# Create a new environment using pyenv, it's already using python 3.11
-pyenv virtualenv 3.11.0 metAIsploit-assistant
+set -e
 
-# Activate the environment
-pyenv activate metAIsploit-assistant
+echo "Starting MetAIsploit Assistant..."
 
-# Install the required packages
-poetry install
-poetry run init
+# Ensure models directory exists
+mkdir -p /app/models
 
-# Start the assistant
+# Check if models are available, if not try to download
+if [ ! "$(ls -A /app/models)" ]; then
+    echo "No models found, attempting to download..."
+    poetry run init || echo "Model download failed, continuing..."
+fi
+
+# Default to chat mode, but allow override via CMD
+if [ $# -eq 0 ]; then
+    echo "Starting interactive chat mode..."
+    exec poetry run chat
+else
+    echo "Running custom command: $@"
+    exec "$@"
+fi
