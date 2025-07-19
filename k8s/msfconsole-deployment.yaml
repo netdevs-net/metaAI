@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msfconsole
+  namespace: metaisploit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: msfconsole
+  template:
+    metadata:
+      labels:
+        app: msfconsole
+    spec:
+      containers:
+      - name: msfconsole
+        image: metasploitframework/metasploit-framework:latest
+        command: ["msfconsole", "-r", "/app/scripts/startup.rc"]
+        volumeMounts:
+        - name: msf-data
+          mountPath: /app/data
+      volumes:
+      - name: msf-data
+        persistentVolumeClaim:
+          claimName: metaisploit-pvc
