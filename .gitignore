@@ -119,6 +119,29 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# Docker
+*.log
+*.pid
+*.sock
+.env
+.env.*
+.docker/
+.dockerignore
+Dockerfile*
+
+# Model and data directories
+models/
+data/
+recon_output/
+
+# Local config and secrets
+*.secret
+*.key
+*.pem
+
+# Ignore macOS artifacts
+.DS_Store
+
 # Environments
 .env
 .venv

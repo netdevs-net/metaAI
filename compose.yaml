@@ -1,4 +1,22 @@
 services:
+  metaisploit-assistant:
+    build: .
+    container_name: metaisploit-assistant
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    environment:
+      - METASPLOIT_ROOT=/opt/metasploit-framework
+      - GPT4ALL_MODEL_PATH=/app/models
+    ports:
+      - "8080:8080"
+    depends_on:
+      - metasploit
+    networks:
+      - metasploit-net
+
   metasploit:
     image: metasploitframework/metasploit-framework
     container_name: metasploit
@@ -8,7 +26,16 @@ services:
       - ./data:/data
     ports:
       - "4444:4444"
-      - "8080"
       - "55552:55552"
       - "55553:55553"
+    networks:
+      - metasploit-net
     entrypoint: ["./msfconsole", "-r", "docker/msfconsole.rc", "-y", "$APP_HOME/config/database.yml", "-x", "load", "mmsgrpc", "yourpassword"]
+
+networks:
+  metasploit-net:
+    driver: bridge
+
+volumes:
+  models:
+  data:
