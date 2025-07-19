@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assistant-api
+  namespace: metaisploit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assistant-api
+  template:
+    metadata:
+      labels:
+        app: assistant-api
+    spec:
+      containers:
+      - name: assistant
+        image: <your-image-here>
+        command: ["poetry", "run", "chat"]
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        envFrom:
+        - secretRef:
+            name: metaisploit-secrets
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: metaisploit-pvc
