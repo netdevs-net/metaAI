@@ -1,4 +1,21 @@
-# Minimal msgrpc test for debugging import/context issues
+import sys
+import os
+from contextlib import contextmanager
+
+@contextmanager
+def suppress_stdout_stderr():
+    with open(os.devnull, 'w') as devnull:
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = devnull
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+
+
 try:
     from pymetasploit3.msfrpc import MsfRpcClient
     print("[DEBUG] Attempting direct msgrpc connection before imports...")
@@ -7,7 +24,8 @@ try:
 except Exception as e:
     print(f"[DEBUG] ERROR: msgrpc connection failed at startup: {e}")
 
-from langchain import PromptTemplate, LLMChain
+from langchain_core.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain_community.llms import LlamaCpp
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from metAIsploit_assistant.types import BASE_MODELS
@@ -49,20 +67,21 @@ def setup_model() -> LLMChain:
     phi2_model = BASE_MODELS.PHI2
     print(f"[INFO] Using model: {phi2_model.choice_name} at {phi2_model.file_location}")
 
-    llm = LlamaCpp(
-        model_path=phi2_model.file_location,
-        callbacks=callbacks,
-        verbose=True,
-        n_ctx=2048,  # match model context length
-        temperature=0.7,  # reasonable default
-    )
+    with suppress_stdout_stderr():
+        llm = LlamaCpp(
+            model_path=phi2_model.file_location,
+            callbacks=callbacks,
+            verbose=True,
+            n_ctx=2048,  # match model context length
+            temperature=0.7,  # reasonable default
+        )
 
     template = """You are an expert penetration tester using Metasploit. When asked to scan a target, always generate the Metasploit console command db_nmap (not shell nmap), with all required flags. For example: db_nmap -Pn -T5 --max-retries=1 <target_ip>.\n\nQuestion: {question}\n\nAnswer: Let's think step by step. Always respond with a db_nmap command if the user asks for any network scan."""
 
     prompt = PromptTemplate(template=template, input_variables=["question"])
 
-    return LLMChain(prompt=prompt, llm=llm)
-
+    # Use the new RunnableSequence API
+    return prompt | llm
 
 
 def perform_chat() -> None:
@@ -80,12 +99,10 @@ def perform_chat() -> None:
         if os.environ.get("METAISPLOIT_AUTOTEST") == "1":
             print("[AUTOTEST] Running automated nmap scan on localhost...")
             # Simulate a user prompt for nmap scan
-            user_prompt = "Scan localhost for open ports and recommend next Metasploit modules."
-            # Use the same workflow as the main chat loop, but for localhost
-            target_domain = "localhost"
-            # Resolve to IP (127.0.0.1)
-            target_ip = "127.0.0.1"
-            # Run the nmap workflow (reuse logic from perform_chat)
+            user_prompt = "Scan DVWA and all top 1000 ports for open ports and recommend next Metasploit modules."
+            target_domain = "dvwa"
+            target_ip = "dvwa"
+            # Scan top 1000 ports (default)
             from datetime import datetime
             import subprocess
             import shlex
