@@ -1,0 +1,2 @@
+# msfconsole.rc - Ensure msgrpc starts for Metasploit RPC API
+load msgrpc ServerHost=0.0.0.0 ServerPort=55552 User=msf Pass=Meta2025SecurePass

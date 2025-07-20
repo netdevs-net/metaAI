@@ -1,5 +1,6 @@
 #!/bin/bash
 # Docker startup script for MetAIsploit Assistant
+# Poetry is installed and dependencies are up to date from Dockerfile build.
 
 set -e
 
@@ -20,5 +21,5 @@ if [ $# -eq 0 ]; then
     exec poetry run chat
 else
     echo "Running custom command: $@"
-    exec "$@"
+    exec poetry run "$@"
 fi

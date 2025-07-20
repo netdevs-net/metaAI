@@ -127,7 +127,7 @@ celerybeat.pid
 .env.*
 .docker/
 .dockerignore
-Dockerfile*
+# Dockerfile*
 
 # Model and data directories
 models/

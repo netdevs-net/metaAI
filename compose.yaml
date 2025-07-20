@@ -5,6 +5,7 @@ services:
     tty: true
     stdin_open: true
     volumes:
+      - ./:/app
       - ./models:/app/models
       - ./data:/app/data
     environment:
@@ -24,13 +25,14 @@ services:
     stdin_open: true
     volumes:
       - ./data:/data
+      - ./docker/msfconsole.rc:/usr/src/metasploit-framework/docker/msfconsole.rc
     ports:
       - "4444:4444"
       - "55552:55552"
       - "55553:55553"
     networks:
       - metasploit-net
-    entrypoint: ["./msfconsole", "-r", "docker/msfconsole.rc", "-y", "$APP_HOME/config/database.yml", "-x", "load", "mmsgrpc", "yourpassword"]
+    entrypoint: ["./msfconsole", "-r", "docker/msfconsole.rc", "-y", "$APP_HOME/config/database.yml"]
 
 networks:
   metasploit-net:
