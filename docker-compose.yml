@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  metasploit:
+    # Existing metasploit service definition goes here
+    # ...
+
+  assistant:
+    # Existing assistant service definition goes here
+    # ...
+
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: dvwa
+    ports:
+      - "8081:80"
+    environment:
+      - MYSQL_ROOT_PASSWORD=dvwa
+      - MYSQL_PASSWORD=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_DATABASE=dvwa
+    networks:
+      - metanet
+    restart: unless-stopped
+
+networks:
+  metanet:
+    driver: bridge
+
+volumes:
+  # Add any volumes if needed for persistence

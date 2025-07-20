@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.93 scan initiated Sun Jul 20 05:34:29 2025 as: nmap -Pn -T5 -&#45;max-retries=1 -d -p 8081 -oX nmap_20250720_053429.xml localhost -->
+<nmaprun scanner="nmap" args="nmap -Pn -T5 -&#45;max-retries=1 -d -p 8081 -oX nmap_20250720_053429.xml localhost" start="1752989669" startstr="Sun Jul 20 05:34:29 2025" version="7.93" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="1" services="8081"/>
+<verbose level="1"/>
+<debugging level="1"/>
+<taskbegin task="SYN Stealth Scan" time="1752989669"/>
+<taskend task="SYN Stealth Scan" time="1752989669" extrainfo="1 total ports"/>
+<host starttime="1752989669" endtime="1752989669"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="user"/>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><port protocol="tcp" portid="8081"><state state="closed" reason="reset" reason_ttl="64"/><service name="blackice-icecap" method="table" conf="3"/></port>
+</ports>
+<times srtt="32" rttvar="5000" to="50000"/>
+</host>
+<runstats><finished time="1752989669" timestr="Sun Jul 20 05:34:29 2025" summary="Nmap done at Sun Jul 20 05:34:29 2025; 1 IP address (1 host up) scanned in 0.08 seconds" elapsed="0.08" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

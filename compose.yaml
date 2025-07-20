@@ -34,10 +34,24 @@ services:
       - metasploit-net
     entrypoint: ["./msfconsole", "-r", "docker/msfconsole.rc", "-y", "$APP_HOME/config/database.yml"]
 
-networks:
-  metasploit-net:
-    driver: bridge
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: dvwa
+    ports:
+      - "8081:80"
+    environment:
+      - MYSQL_ROOT_PASSWORD=dvwa
+      - MYSQL_PASSWORD=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_DATABASE=dvwa
+    networks:
+      - metasploit-net
+    restart: unless-stopped
 
 volumes:
   models:
   data:
+
+networks:
+  metasploit-net:
+    driver: bridge
