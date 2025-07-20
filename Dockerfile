@@ -19,6 +19,9 @@ WORKDIR /app
 # Copy pyproject and poetry.lock first for caching
 COPY pyproject.toml poetry.lock ./
 
+# Copy all code (including README.md) before installing
+COPY . .
+
 # Install nmap for network scanning
 RUN apt-get update && apt-get install -y nmap && rm -rf /var/lib/apt/lists/*
 
@@ -27,7 +30,7 @@ RUN --mount=type=cache,target=/root/.cache/pypoetry \
     --mount=type=cache,target=/root/.cache/pip \
     poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi \
-    && pip install --no-cache-dir llama-cpp-python==0.2.72
+    && pip install --no-cache-dir llama-cpp-python
 
 # Copy the rest of the code
 COPY . .
