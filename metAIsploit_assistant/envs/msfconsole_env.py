@@ -1,7 +1,8 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 from metAIsploit_assistant.utilities.executor import MetasploitExecutor
+from metAIsploit_assistant.utilities.reward_utils import compute_reward
 
 class MSFConsoleEnv(gym.Env):
     """
@@ -32,16 +33,20 @@ class MSFConsoleEnv(gym.Env):
             cmd = f'run custom'
         else:
             cmd = ''  # noop
+        import time
+        start_time = time.time()
         if cmd:
             success, output, error = self.executor.execute_command(cmd)
         else:
             success, output, error = True, '', None
-        # Simple reward: +1 for success, 0 otherwise
-        reward = 1.0 if success else 0.0
+        elapsed_time = time.time() - start_time
+        # Sophisticated reward: combine success, impact, stealth, precision, speed
+        reward_details = compute_reward(output, error, action, elapsed_time=elapsed_time)
+        reward = reward_details['total']
         # Observation: basic embedding (placeholder)
         self.state = np.random.rand(128).astype(np.float32)
         self.done = False  # Could set to True if session is obtained or exploit succeeds
-        info = {'output': output, 'error': error}
+        info = {'output': output, 'error': error, 'reward_details': reward_details, 'elapsed_time': elapsed_time}
         return self.state, reward, self.done, info
 
     def reset(self):

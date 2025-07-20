@@ -1,13 +1,33 @@
-version: '3.8'
-
 services:
-  metasploit:
-    # Existing metasploit service definition goes here
-    # ...
+  metaisploit-assistant:
+    build: .
+    container_name: metaisploit-assistant
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/app
+      - ./models:/app/models
+      - ./data:/app/data
+    environment:
+      - METASPLOIT_ROOT=/opt/metasploit-framework
+      - GPT4ALL_MODEL_PATH=/app/models
+    ports:
+      - "8080:8080"
+    depends_on:
+      - metasploit
+    networks:
+      - metasploit-net
 
-  assistant:
-    # Existing assistant service definition goes here
-    # ...
+  metasploit:
+    image: metasploitframework/metasploit-framework
+    container_name: metasploit
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./data:/data
+      - ./docker/msfconsole.rc:/usr/src/metasploit-framework/docker/msfconsole.rc
+    networks:
+      - metasploit-net
 
   dvwa:
     image: vulnerables/web-dvwa
@@ -20,12 +40,11 @@ services:
       - MYSQL_USER=dvwa
       - MYSQL_DATABASE=dvwa
     networks:
-      - metanet
+      - metasploit-net
     restart: unless-stopped
 
 networks:
-  metanet:
+  metasploit-net:
     driver: bridge
 
-volumes:
-  # Add any volumes if needed for persistence
+# volumes section removed (was empty and caused error)

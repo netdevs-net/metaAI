@@ -3,7 +3,7 @@ from typing import List
 from pathlib import Path
 from tqdm import tqdm
 import requests
-from metAIsploit_assistant.types import BASE_MODELS, HackerModel
+from metAIsploit_assistant.assistant_types import BASE_MODELS, HackerModel
 
 
 def get_models_inventory() -> None:

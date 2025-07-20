@@ -28,7 +28,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain_community.llms import LlamaCpp
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from metAIsploit_assistant.types import BASE_MODELS
+from metAIsploit_assistant.assistant_types import BASE_MODELS
 from metAIsploit_assistant.utilities.formatters import (
     has_script_in_response,
     splice_out_file,
@@ -42,7 +42,7 @@ from metAIsploit_assistant.utilities.models import (
 
 from langchain_community.llms import LlamaCpp
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from metAIsploit_assistant.types import BASE_MODELS
+from metAIsploit_assistant.assistant_types import BASE_MODELS
 from metAIsploit_assistant.utilities.formatters import (
     has_script_in_response,
     splice_out_file,
@@ -67,14 +67,13 @@ def setup_model() -> LLMChain:
     phi2_model = BASE_MODELS.PHI2
     print(f"[INFO] Using model: {phi2_model.choice_name} at {phi2_model.file_location}")
 
-    with suppress_stdout_stderr():
-        llm = LlamaCpp(
-            model_path=phi2_model.file_location,
-            callbacks=callbacks,
-            verbose=True,
-            n_ctx=2048,  # match model context length
-            temperature=0.7,  # reasonable default
-        )
+    llm = LlamaCpp(
+        model_path=phi2_model.file_location,
+        callbacks=callbacks,
+        verbose=True,
+        n_ctx=2048,  # match model context length
+        temperature=0.7,  # reasonable default
+    )
 
     template = """You are an expert penetration tester using Metasploit. When asked to scan a target, always generate the Metasploit console command db_nmap (not shell nmap), with all required flags. For example: db_nmap -Pn -T5 --max-retries=1 <target_ip>.\n\nQuestion: {question}\n\nAnswer: Let's think step by step. Always respond with a db_nmap command if the user asks for any network scan."""
 
@@ -113,14 +112,14 @@ def perform_chat() -> None:
             print(f"[AUTOTEST] Executing nmap: {nmap_cmd}")
             try:
                 result = subprocess.run(shlex.split(nmap_cmd), capture_output=True, text=True, timeout=90)
-                print(f"[AUTOTEST] nmap scan complete. Output saved to {xml_filename}\n")
+                print(f"[AUTOTEST] nmap scan complete. Output saved to {xml_path}\n")
                 print("[AUTOTEST NMAP STDOUT]:\n" + result.stdout)
                 print("[AUTOTEST NMAP STDERR]:\n" + result.stderr)
             except Exception as e:
                 print(f"[AUTOTEST ERROR] nmap execution failed: {e}")
                 return
             # Parse and summarize nmap XML
-            parsed = parse_nmap_xml(xml_filename)
+            parsed = parse_nmap_xml(xml_path)
             summary = summarize_nmap_findings(parsed)
             print("[AUTOTEST] Nmap scan summary:")
             print(summary)

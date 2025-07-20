@@ -1,42 +1,45 @@
 # syntax=docker/dockerfile:1.4
 FROM python:3.11-slim
 
-# System deps
+# syntax=docker/dockerfile:1.4
+FROM python:3.11-slim
+
+# --- Install system dependencies and Poetry early for caching ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
     curl \
     wget \
+    nmap \
     && rm -rf /var/lib/apt/lists/*
 
-# Poetry install
-# Install the latest version of Poetry for bleeding-edge features and fixes.
+# Install Poetry (cached unless version changes)
 RUN pip install --upgrade poetry
 
 # Set workdir
 WORKDIR /app
 
-# Copy pyproject and poetry.lock first for caching
+# --- Copy only dependency files first for maximum cache utilization ---
 COPY pyproject.toml poetry.lock ./
 
-# Copy all code (including README.md) before installing
-COPY . .
-
-# Install nmap for network scanning
-RUN apt-get update && apt-get install -y nmap && rm -rf /var/lib/apt/lists/*
-
-# Install all dependencies in one step, including latest langchain-community and llama-cpp-python
+# --- Install Python dependencies; this layer is cached unless deps change ---
 RUN --mount=type=cache,target=/root/.cache/pypoetry \
     --mount=type=cache,target=/root/.cache/pip \
     poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi \
     && pip install --no-cache-dir llama-cpp-python
 
-# Copy the rest of the code
+# --- Now copy the rest of the application code ---
 COPY . .
 
-# Create models directory and set permissions
+# Create models directory and set permissions (idempotent)
 RUN mkdir -p /app/models && chmod 755 /app/models
+
+# --- End of Dockerfile ---
+# Best practices:
+# - Poetry and dependencies are cached unless pyproject.toml/poetry.lock changes
+# - Source code changes do not trigger full dependency reinstall
+# - nmap and all system deps installed in one layer for cache efficiency
 
 # Environment variables
 ENV PYTHONPATH=/app
