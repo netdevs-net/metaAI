@@ -6,21 +6,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MetasploitExecutor:
-    def __init__(self, host='127.0.0.1', port=55552, user='msf', password='msf'):
+    def __init__(self, host='metasploit', port=55552, user='msf', password='Meta2025SecurePass', connect_on_init=False):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         self.client = None
-        self.connect()
+        if connect_on_init:
+            self.connect()
 
     def connect(self):
         try:
-            self.client = MsfRpcClient(
-                password=self.password, username=self.user, port=self.port, server=self.host
-            )
-            logger.info(f"Connected to Metasploit RPC at {self.host}:{self.port}")
+            print(f"Attempting to connect to msgrpc at {self.host}:{self.port} with user={self.user} and pass={self.password}")
+            self.client = MsfRpcClient(password=self.password, username=self.user, port=self.port, server=self.host)
+            print("SUCCESS: Connected to Metasploit RPC!")
         except Exception as e:
+            print(f"ERROR: {e}")
             logger.error(f"Failed to connect to Metasploit RPC: {e}")
             self.client = None
 
