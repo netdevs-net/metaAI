@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import List
-from metAIsploit_assistant.types import SupportedScripts, LlmFileOutput
+from metAIsploit_assistant.assistant_types import SupportedScripts, LlmFileOutput
 
 
 def has_script_in_response(llm_resp: str) -> bool:

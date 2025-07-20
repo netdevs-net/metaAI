@@ -4,7 +4,7 @@ import re
 import requests
 from time import time
 from typing import Tuple, Optional, List
-from metAIsploit_assistant.types.training_types import TrainingPromptModel
+from metAIsploit_assistant.assistant_types.training_types import TrainingPromptModel
 from bs4 import BeautifulSoup
 
 CVE_RE = r"CVE-\d{4}-\d{4,7}"

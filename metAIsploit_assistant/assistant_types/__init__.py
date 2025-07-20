@@ -1,4 +1,4 @@
-from metAIsploit_assistant.types.model_types import (
+from metAIsploit_assistant.assistant_types.model_types import (
     HackerModel,
     KnownModels,
     KnownModelUrls,
@@ -7,7 +7,7 @@ from metAIsploit_assistant.types.model_types import (
     LlmFileOutput,
     BASE_MODELS,
 )
-from metAIsploit_assistant.types.training_types import (
+from metAIsploit_assistant.assistant_types.training_types import (
     TrainingPromptModel,
     TrainingPromptModelSet,
     TrainingFineTuneParamsModel,
