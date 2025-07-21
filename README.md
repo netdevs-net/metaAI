@@ -17,7 +17,7 @@ MetAIsploit Assistant is an advanced AI-driven automation framework for Metasplo
 - **Automated Metasploit RPC startup** (no msfrpcd; modern msgrpc method)
 - **Persistent PostgreSQL database integration** for Metasploit
 - **Python RL Gym environment** for safe, repeatable exploitation experiments
-- **LLM integration** (Phi-2 quantized GGUF by default, SecBERT optional)
+- **LLM integration** (Phi-2 quantized GGUF by default, SecBERT Instructional optional via `LLM_MODEL` env var)
 - **Replay buffer, structured JSON logging, and TensorBoard monitoring** for RL
 - **Automated DNS leak/crt.sh checks before scanning**
 - **Organized scan output (scans/ directory)**
@@ -66,14 +66,19 @@ MetAIsploit Assistant is an advanced AI-driven automation framework for Metasplo
 
 ## Development Workflow
 - **Live code reload** via `.:/app` volume mount (edit code on host, see changes instantly in container)
+- **All scan outputs, logs, models, and data directories are gitignored by default**
 - **Only restart containers for dependency or config changes**
 - **All secrets managed via `.env-dev`** (never hardcode passwords)
+- **Utility scripts:**
+  - `scripts/crtsh_dns_leak.py`: Automated DNS leak check before scanning
+  - `scripts/run_tensorboard.sh`: Launch TensorBoard for RL monitoring
+  - `scripts/test_pymetasploit3.py`: Test Metasploit RPC connectivity
 
 ---
 
 ## RL & LLM Integration
 - **RL agent**: Trains to exploit DVWA and other targets using Gym environment
-- **LLM**: Phi-2 by default; can switch to SecBERT Instructional for security/NLP tasks
+- **LLM**: Phi-2 by default (models/phi-2.Q4_K_M.gguf); can switch to SecBERT Instructional (HuggingFace) by setting `LLM_MODEL=SecBERT-Instructional` in `.env-dev`
 - **Replay buffer**: All RL transitions logged for analysis and offline fine-tuning
 - **TensorBoard**: Monitor RL progress (`scripts/run_tensorboard.sh`)
 
@@ -82,8 +87,9 @@ MetAIsploit Assistant is an advanced AI-driven automation framework for Metasplo
 ## Security & Best Practices
 - **No secrets in code or Compose**; use `.env-dev` only
 - **Metasploit RPC not exposed outside Docker network**
-- **Persistent DB and scan data**
+- **Persistent DB, scan, log, and model data**
 - **Healthchecks on all major services**
+- **Project structure and generated files are organized for best practice (see below)**
 
 ---
 
@@ -118,7 +124,7 @@ MIT
 - [SecBERT Instructional](https://huggingface.co/jackaduma/SecBERT-Instructional)
 
 
-This is a placeholder README to satisfy Poetry install requirements.
+
 
 This project is a study into generating POC / Exploits for the metasploit framework using LLMs.
 
@@ -130,34 +136,6 @@ Assumptions of the project:
 
 *Success Criteria for Project*: Utilize the commandline chat prompt to generate a guide for install, and usage of a module that can be saved directly into the metasploit framework using a previously unseen CVE.
 
-## Quick Use
-For a quick demo on how this is used please run the following commands (assuming you have the pre-reqs installed).
-
-Setup
-```sh
-pip install poetry
-git clone https://github.com/roostercoopllc/metAIsploit-assistant -r
-cd metAIsploit-assistant
-poetry install
-# (Optional) This will download the snoozy binary by default
-poetry run init
-```
-
-```sh
-# If you don't have the snoozy model downloaded
-poetry run demo
-# if you do have the snoozy model downloaded
-poetry run prompt-demo
-```
-
-You can run the script interactively by running the following commands:
-```sh
-export METASPLOIT_ROOT=<your metasploit root>
-# Update the .env with your MSF root
-poetry run chat
-```
-
-*Note* Depending on your hardware you are running this on, this might take a little while to return the response.
 
 ## Install / Setup
 This project uses poetry to generate manage dependencies and attempts to keep the project clean (we will see for how long)
