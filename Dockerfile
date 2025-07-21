@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     nmap \
+    postgresql \
+    postgresql-client \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry (cached unless version changes)
@@ -21,6 +24,10 @@ WORKDIR /app
 
 # --- Copy only dependency files first for maximum cache utilization ---
 COPY pyproject.toml poetry.lock ./
+# Ensure README.md is present for Poetry install
+COPY README.md ./
+# Copy the main package so poetry install works
+COPY metAIsploit_assistant ./metAIsploit_assistant
 
 # --- Install Python dependencies; this layer is cached unless deps change ---
 RUN --mount=type=cache,target=/root/.cache/pypoetry \

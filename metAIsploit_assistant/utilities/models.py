@@ -23,7 +23,8 @@ def get_models_inventory() -> None:
 def get_available_models() -> List[HackerModel]:
     available_models = []
     for llm_model in BASE_MODELS.get_model_inventory():
-        if os.path.exists(llm_model.file_location):
+        # If file_location is None (e.g., HuggingFace models like SecBERT), always include
+        if llm_model.file_location is None or os.path.exists(llm_model.file_location):
             available_models.append(llm_model)
     return available_models
 

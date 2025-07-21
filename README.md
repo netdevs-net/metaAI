@@ -1,4 +1,125 @@
 # MetAIsploit Assistant
+
+AI-powered Metasploit Automation & Module Generation Platform
+
+---
+
+## Overview
+MetAIsploit Assistant is an advanced AI-driven automation framework for Metasploit, designed to:
+- **Automate exploitation workflows** using RL (Reinforcement Learning) and LLMs (Large Language Models)
+- **Generate custom Metasploit modules** from CVEs and vulnerability data
+- **Integrate with vulnerable apps (e.g., DVWA) for end-to-end training and testing**
+- **Enable secure, reproducible, and rapid development** via Docker Compose
+
+---
+
+## Features
+- **Automated Metasploit RPC startup** (no msfrpcd; modern msgrpc method)
+- **Persistent PostgreSQL database integration** for Metasploit
+- **Python RL Gym environment** for safe, repeatable exploitation experiments
+- **LLM integration** (Phi-2 quantized GGUF by default, SecBERT optional)
+- **Replay buffer, structured JSON logging, and TensorBoard monitoring** for RL
+- **Automated DNS leak/crt.sh checks before scanning**
+- **Organized scan output (scans/ directory)**
+- **Docker Compose orchestration** (Metasploit, Assistant, DVWA, DB)
+- **Rapid development via local source volume mounts**
+
+---
+
+## Architecture
+
+```
+[User]
+   |
+   v
+[Assistant (Python, RL, LLM)] <-> [Metasploit (msfconsole+msgrpc)] <-> [PostgreSQL]
+   |
+   v
+[DVWA / Target Apps]
+```
+- **Assistant**: Python 3.11, Poetry, LangChain, RL, LLMs
+- **Metasploit**: Official Docker image, msgrpc plugin, DB support
+- **DVWA**: Vulnerable web app for RL/LLM training
+- **All services**: Docker Compose, isolated network
+
+---
+
+## Quickstart
+
+1. **Clone the repo**
+2. **Copy and edit `.env-dev`**
+   - Set `MSGRPC_PASS` and DB credentials
+3. **Start all services**
+   ```bash
+   docker compose up -d --build
+   ```
+4. **Check service health**
+   ```bash
+   docker compose ps
+   ```
+5. **Test Metasploit RPC connectivity**
+   ```bash
+   docker compose exec metaisploit-assistant poetry run python scripts/test_pymetasploit3.py
+   ```
+
+---
+
+## Development Workflow
+- **Live code reload** via `.:/app` volume mount (edit code on host, see changes instantly in container)
+- **Only restart containers for dependency or config changes**
+- **All secrets managed via `.env-dev`** (never hardcode passwords)
+
+---
+
+## RL & LLM Integration
+- **RL agent**: Trains to exploit DVWA and other targets using Gym environment
+- **LLM**: Phi-2 by default; can switch to SecBERT Instructional for security/NLP tasks
+- **Replay buffer**: All RL transitions logged for analysis and offline fine-tuning
+- **TensorBoard**: Monitor RL progress (`scripts/run_tensorboard.sh`)
+
+---
+
+## Security & Best Practices
+- **No secrets in code or Compose**; use `.env-dev` only
+- **Metasploit RPC not exposed outside Docker network**
+- **Persistent DB and scan data**
+- **Healthchecks on all major services**
+
+---
+
+## Troubleshooting
+- **Poetry install errors**: Ensure `README.md` exists, or use `--no-root` flag
+- **Metasploit RPC auth errors**: Ensure `MSGRPC_PASS` matches in `.env-dev` and Compose
+- **Container build issues**: Rebuild with `docker compose up -d --build`
+
+---
+
+## Contributing
+- PRs and issues welcome!
+- Please follow best practices for Python, Docker, and security
+
+---
+
+## License
+MIT
+
+---
+
+## Authors
+- [Your Name Here]
+- [Contributors]
+
+---
+
+## References
+- [Metasploit Framework](https://github.com/rapid7/metasploit-framework)
+- [DVWA](https://github.com/digininja/DVWA)
+- [Phi-2](https://huggingface.co/microsoft/phi-2)
+- [SecBERT Instructional](https://huggingface.co/jackaduma/SecBERT-Instructional)
+
+
+This is a placeholder README to satisfy Poetry install requirements.
+
 This project is a study into generating POC / Exploits for the metasploit framework using LLMs.
 
 Assumptions of the project:
@@ -56,19 +177,25 @@ Development Setup
 poetry install
 ```
 
-## Simple Usage
-To run the chat interactively 
-```sh
-poetry run chat
-```
+---
 
-You can then chat with the model and generate responses. When those responses find code snippets, the script will ask if you wanted to save each individual code snippet. 
+## Quickstart
 
-## (TO-DO) Create / Update Datasets model training
-`Create Initial Datasets`
-* *Labels*
-  * Attempted Automated Labeling:
-    
+1. **Clone the repo**
+2. **Copy and edit `.env-dev`**
+   - Set `MSGRPC_PASS` and DB credentials
+3. **Start all services**
+   ```bash
+   docker compose up -d --build
+   ```
+4. **Check service health**
+   ```bash
+   docker compose ps
+   ```
+5. **Test Metasploit RPC connectivity**
+   ```bash
+   docker compose exec metaisploit-assistant poetry run python scripts/test_pymetasploit3.py
+   ```
     There are two scripts that attempt to make the prompt dataset. These prompts are based off of a collection of the writeups on cves from the mitre collection of cves. They will associate the metasploit modules with ever one of the complete write ups housed in the the mitre datahouse. 
 
     The prompts for training are the entire white paper and an additional prompt of the phrase `write a metasploit module for cve-xxxx-yyyyy`.
@@ -102,3 +229,22 @@ You can then chat with the model and generate responses. When those responses fi
 6. [Base Model used for the gpt4all models](https://github.com/kingoflolz/mesh-transformer-jax)
 7. [Training nomic](https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-training/README.md)
 8. [Command Stagers](https://docs.metasploit.com/docs/development/developing-modules/guides/how-to-use-command-stagers.html)
+
+
+## Monitoring RL Training with TensorBoard
+
+To visualize RL training metrics (rewards, losses, etc.), use the provided helper script:
+
+```bash
+bash scripts/run_tensorboard.sh
+```
+
+This will launch TensorBoard on port 6006 (default). Open http://localhost:6006 in your browser to view live metrics.
+
+You can customize the log directory and port:
+
+```bash
+bash scripts/run_tensorboard.sh [logdir] [port]
+# Example: bash scripts/run_tensorboard.sh runs 6006
+```
+
