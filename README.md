@@ -15,7 +15,8 @@ MetAIsploit Assistant is an advanced AI-driven automation framework for Metasplo
 
 ## Features
 - **Automated Metasploit RPC startup** (no msfrpcd; modern msgrpc method)
-- **Persistent PostgreSQL database integration** for Metasploit
+- **Persistent PostgreSQL database integration** with automatic connection handling
+- **Direct database configuration** for reliable Metasploit DB connectivity
 - **Python RL Gym environment** for safe, repeatable exploitation experiments
 - **LLM integration** (Phi-2 quantized GGUF by default, SecBERT Instructional optional via `LLM_MODEL` env var)
 - **Replay buffer, structured JSON logging, and TensorBoard monitoring** for RL
@@ -64,8 +65,25 @@ MetAIsploit Assistant is an advanced AI-driven automation framework for Metasplo
 
 ---
 
+## Service Health & Testing
+- **Service Healthcheck:**
+  - Use `scripts/healthcheck.py` to verify the Metasploit RPC and DB services are up and responding.
+  - Healthchecks are integrated into `docker-compose.yml` for automated status checks.
+- **Metasploit DB Service:**
+  - `scripts/metasploit_db_service.py` runs as a background service to monitor and reconnect the Metasploit DB if needed.
+  - See `docker/metasploit-db.service` for systemd integration details.
+- **Testing Metasploit Integration:**
+  - Use `scripts/test_pymetasploit3.py` to verify RPC connectivity and DB status.
+  - Use `scripts/msf_client.py` for advanced RPC client tests and development.
+- **Performance Testing:**
+  - `scripts/test_msf_performance.py` benchmarks Metasploit RPC client performance (basic vs optimized).
+
+---
+
 ## Development Workflow
 - **Live code reload** via `.:/app` volume mount (edit code on host, see changes instantly in container)
+- **Database configuration** is handled automatically on container startup via `init-msf-db.sh`
+- **Environment variables** in `.env-dev` control database and RPC settings
 - **All scan outputs, logs, models, and data directories are gitignored by default**
 - **Only restart containers for dependency or config changes**
 - **All secrets managed via `.env-dev`** (never hardcode passwords)
@@ -93,10 +111,51 @@ MetAIsploit Assistant is an advanced AI-driven automation framework for Metasplo
 
 ---
 
+## Docker Image & Build Management
+- **Prebuilt Base Image:**
+  - If you change system dependencies or Metasploit version, rebuild the base image:
+    ```bash
+    docker build -f Dockerfile.msfbase -t metasploit-base:latest .
+    ```
+  - For normal development, use:
+    ```bash
+    docker compose build
+    docker compose up -d
+    ```
+  - Avoid `--no-cache` unless you change system dependencies or the base image.
+- **Volume Mounts for Live Reload:**
+  - Source code and models are mounted from the host for instant reloads and rapid iteration.
+- **Environment Variables:**
+  - All credentials (DB, msgrpc) are managed via `.env-dev` and passed securely to containers.
+
+---
+
 ## Troubleshooting
+
+### Database Connection Issues
+If Metasploit fails to connect to the database:
+1. Verify the PostgreSQL container is running:
+   ```bash
+   docker compose ps | grep db
+   ```
+2. Check container logs for errors:
+   ```bash
+   docker compose logs metasploit
+   ```
+3. Manually test the database connection:
+   ```bash
+   docker compose exec metasploit /usr/src/metasploit-framework/msfconsole -x 'db_status; exit'
+   ```
+
+### Common Issues
 - **Poetry install errors**: Ensure `README.md` exists, or use `--no-root` flag
 - **Metasploit RPC auth errors**: Ensure `MSGRPC_PASS` matches in `.env-dev` and Compose
 - **Container build issues**: Rebuild with `docker compose up -d --build`
+- **Database initialization issues**: If the database fails to initialize, try:
+  ```bash
+  docker compose down -v  # Warning: This will delete all data
+  docker compose up -d
+  ```
 
 ---
 
@@ -126,15 +185,23 @@ MIT
 
 
 
-This project is a study into generating POC / Exploits for the metasploit framework using LLMs.
+## Project Goals
 
-Assumptions of the project:
-1. Metasploit framework has a well defined outcome for a module.
-2. The modules have metadata required for each module that would make labeling easier and more consistent.
-3. The modules can be broken down into various utilities that (assumed to be similar to defined classes).
-3. Most modules are associated with CVE research that can lead to robust prompt generation.
+This project aims to enhance Metasploit with AI/ML capabilities through:
+1. **Automated Module Generation**: Create Metasploit modules from CVE data using LLMs
+2. **Reinforcement Learning**: Train agents to automate exploitation workflows
+3. **Intelligent Automation**: Combine LLMs with Metasploit's capabilities for guided security testing
 
-*Success Criteria for Project*: Utilize the commandline chat prompt to generate a guide for install, and usage of a module that can be saved directly into the metasploit framework using a previously unseen CVE.
+### Key Assumptions
+1. Metasploit's modular architecture allows for consistent module structure
+2. CVE data combined with LLMs can generate valid Metasploit modules
+3. RL agents can learn effective exploitation strategies through interaction
+
+### Success Metrics
+- Generate functional Metasploit modules from CVE descriptions
+- Demonstrate automated exploitation of vulnerable targets
+- Provide clear documentation and  usage examples
+- Maintain security best practices throughout the development process
 
 
 ## Install / Setup
