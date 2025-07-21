@@ -26,15 +26,17 @@ services:
     stdin_open: true
     env_file:
       - .env-dev
-    environment:
-      - DATABASE_URL=postgresql://msf:yourpassword@db:5432/msf
     depends_on:
       - db
-    command: /bin/bash -c "cd /usr/src/metasploit-framework && ./msfconsole -r /usr/src/metasploit-framework/docker/msgrpc.rc"
+
+    entrypoint: /docker/init-msf-db.sh
+    command: /bin/bash -c "cd /usr/src/metasploit-framework && ./msfconsole -r docker/msfconsole.rc"
     volumes:
       - ./data:/data
+      - msf4_config:/root/.msf4
       - ./docker/msfconsole.rc:/usr/src/metasploit-framework/docker/msfconsole.rc
       - ./docker/msgrpc.rc:/usr/src/metasploit-framework/docker/msgrpc.rc
+      - ./docker/init-msf-db.sh:/docker/init-msf-db.sh
     networks:
       - metasploit-net
 
@@ -43,7 +45,7 @@ services:
     container_name: metasploit-db
     environment:
       POSTGRES_USER: msf
-      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_PASSWORD: Meta2025SecurePass
       POSTGRES_DB: msf
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -68,6 +70,7 @@ networks:
   metasploit-net:
     driver: bridge
 
-# volumes section removed (was empty and caused error)
 volumes:
   pgdata:
+  msf4_config:
+    driver: local
