@@ -16,14 +16,102 @@ def suppress_stdout_stderr():
             sys.stderr = old_stderr
 
 
-try:
-    from pymetasploit3.msfrpc import MsfRpcClient
-    print("[DEBUG] Attempting direct msgrpc connection before imports...")
-    import os
-    client = MsfRpcClient(os.environ.get('MSGRPC_PASS', 'changeme'), username='msf', port=55552, server='metasploit')
-    print("[DEBUG] SUCCESS: Connected to Metasploit RPC at startup!")
-except Exception as e:
-    print(f"[DEBUG] ERROR: msgrpc connection failed at startup: {e}")
+import os
+import time
+from typing import Optional, Dict, Any
+from functools import wraps
+from pymetasploit3.msfrpc import MsfRpcClient, MsfRpcError
+
+class MetasploitManager:
+    _instance = None
+    _client = None
+    _max_retries = 3
+    _retry_delay = 5  # seconds
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(MetasploitManager, cls).__new__(cls)
+            cls._instance._initialize_client()
+        return cls._instance
+    
+    def _initialize_client(self):
+        """Initialize the Metasploit RPC client with retry logic."""
+        msf_config = {
+            'server': os.environ.get('MSF_SERVER', 'metasploit'),
+            'port': int(os.environ.get('MSF_PORT', 55552)),
+            'username': os.environ.get('MSF_USER', 'msf'),
+            'password': os.environ.get('MSF_PASS', 'changeme'),
+            'ssl': os.environ.get('MSF_SSL', 'false').lower() == 'true'
+        }
+        
+        for attempt in range(1, self._max_retries + 1):
+            try:
+                print(f"[METASPLOIT] Connecting to msfrpcd (attempt {attempt}/{self._max_retries})...")
+                self._client = MsfRpcClient(
+                    password=msf_config['password'],
+                    username=msf_config['username'],
+                    port=msf_config['port'],
+                    server=msf_config['server'],
+                    ssl=msf_config['ssl']
+                )
+                # Test the connection
+                if self._client.call('core.version'):
+                    print("[METASPLOIT] Successfully connected to Metasploit RPC")
+                    return
+                    
+            except MsfRpcError as e:
+                print(f"[METASPLOIT] Error connecting to msfrpcd: {e}")
+                if attempt < self._max_retries:
+                    print(f"[METASPLOIT] Retrying in {self._retry_delay} seconds...")
+                    time.sleep(self._retry_delay)
+                else:
+                    print("[METASPLOIT] Max retries reached. Some Metasploit features may be unavailable.")
+            except Exception as e:
+                print(f"[METASPLOIT] Unexpected error: {e}")
+                break
+    
+    @property
+    def client(self) -> Optional[MsfRpcClient]:
+        """Get the RPC client instance."""
+        if self._client is None:
+            self._initialize_client()
+        return self._client
+    
+    def check_connection(self) -> bool:
+        """Check if the connection to Metasploit is active."""
+        try:
+            return bool(self.client and self.client.call('core.version'))
+        except Exception:
+            return False
+    
+    def reconnect(self) -> bool:
+        """Attempt to re-establish the RPC connection."""
+        self._client = None
+        self._initialize_client()
+        return self.check_connection()
+
+# Initialize the Metasploit manager
+msf_manager = MetasploitManager()
+
+# Decorator for RPC calls with error handling
+def handle_rpc_errors(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except MsfRpcError as e:
+            print(f"[METASPLOIT] RPC Error: {e}")
+            # Attempt to reconnect and retry once
+            if msf_manager.reconnect():
+                try:
+                    return func(*args, **kwargs)
+                except Exception as retry_e:
+                    print(f"[METASPLOIT] Retry failed: {retry_e}")
+            raise
+        except Exception as e:
+            print(f"[METASPLOIT] Error: {e}")
+            raise
+    return wrapper
 
 from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain

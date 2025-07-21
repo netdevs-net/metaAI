@@ -11,32 +11,70 @@ services:
     environment:
       - METASPLOIT_ROOT=/opt/metasploit-framework
       - GPT4ALL_MODEL_PATH=/app/models
+      # Metasploit RPC settings
+      - MSF_SERVER=metasploit
+      - MSF_PORT=55552
+      - MSF_USER=msf
+      - MSF_PASS=${MSGRPC_PASS:-Meta2025SecurePass}
+      - MSF_SSL=false
     ports:
       - "8080:8080"
       - "6006:6006"
     depends_on:
-      - metasploit
+      metasploit:
+        condition: service_healthy
     networks:
       - metasploit-net
+    healthcheck:
+      test: ["CMD", "python3", "scripts/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   metasploit:
-    image: metasploitframework/metasploit-framework
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: metasploit
     tty: true
     stdin_open: true
     env_file:
       - .env-dev
+    environment:
+      # Database configuration
+      - POSTGRES_USER=msf
+      - POSTGRES_PASSWORD=Meta2025SecurePass
+      - POSTGRES_DB=msf
+      - POSTGRES_HOST=db
+      # Metasploit RPC configuration
+      - MSGRPC_PASS=${MSGRPC_PASS:-Meta2025SecurePass}
+      - MSF_DATABASE_CONFIG=/usr/src/metasploit-framework/config/database.yml
     depends_on:
-      - db
-
-    entrypoint: /docker/init-msf-db.sh
-    command: /bin/bash -c "cd /usr/src/metasploit-framework && ./msfconsole -r docker/msfconsole.rc"
+      db:
+        condition: service_healthy
+    # Run as root to allow database initialization
+    user: root
+    # Entrypoint and command
+    entrypoint: /bin/bash
+    command: -c "chmod +x /app/docker/entrypoint.sh && /app/docker/entrypoint.sh"
+    # Required volumes
     volumes:
-      - ./data:/data
-      - msf4_config:/root/.msf4
+      # Mount the RC files
       - ./docker/msfconsole.rc:/usr/src/metasploit-framework/docker/msfconsole.rc
-      - ./docker/msgrpc.rc:/usr/src/metasploit-framework/docker/msgrpc.rc
-      - ./docker/init-msf-db.sh:/docker/init-msf-db.sh
+      - ./docker/msgrpc.rc:/usr/src/metasploit-framework/msgrpc.rc
+      # Mount the entrypoint script
+      - ./docker/entrypoint.sh:/app/docker/entrypoint.sh
+      # Persist Metasploit data
+      - msf4_data:/root/.msf4
+      # Mount the app directory
+      - .:/app
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "msfrpcd"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     networks:
       - metasploit-net
 
@@ -47,6 +85,12 @@ services:
       POSTGRES_USER: msf
       POSTGRES_PASSWORD: Meta2025SecurePass
       POSTGRES_DB: msf
+      PGDATA: /var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U msf -d msf"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -71,6 +115,6 @@ networks:
     driver: bridge
 
 volumes:
-  pgdata:
-  msf4_config:
+  pgdata:  # PostgreSQL data volume
+  msf4_data:  # Metasploit configuration and data
     driver: local

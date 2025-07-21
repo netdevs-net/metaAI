@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+# Install system packages and Metasploit in one layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    curl \
+    wget \
+    nmap \
+    postgresql-client \
+    python3-psycopg2 \
+    libpq-dev \
+    expect \
+    systemd \
+    gnupg2 \
+    && curl https://apt.metasploit.com/metasploit-framework.gpg.key | apt-key add - \
+    && echo "deb http://apt.metasploit.com/ buster main" > /etc/apt/sources.list.d/metasploit-framework.list \
+    && apt-get update \
+    && apt-get install -y metasploit-framework \
+    && rm -rf /var/lib/apt/lists/*
+
+# Optionally: set up systemd, create users, etc.
+
+# Show msfconsole version for verification
+RUN msfconsole --version

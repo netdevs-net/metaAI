@@ -1,0 +1,16 @@
+[Unit]
+Description=Metasploit Database Connection Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/usr/src/metasploit-framework
+ExecStart=/usr/bin/python3 /app/scripts/metasploit_db_service.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
