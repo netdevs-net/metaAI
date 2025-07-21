@@ -1,2 +1,4 @@
 # msfconsole.rc - Ensure msgrpc starts for Metasploit RPC API
 load msgrpc ServerHost=0.0.0.0 ServerPort=55552 User=msf Pass=Meta2025SecurePass
+db_connect postgresql://msf:Meta2025SecurePass@db:5432/msf
+

@@ -1,1 +1,2 @@
+$VERBOSE = nil
 load msgrpc ServerHost=0.0.0.0 User=msf Pass=${MSGRPC_PASS:-changeme} Port=55552

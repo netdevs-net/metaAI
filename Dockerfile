@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql \
     postgresql-client \
     libpq-dev \
+    expect \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry (cached unless version changes)
