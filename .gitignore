@@ -39,9 +39,27 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 
+# RL/Nmap scan outputs
+/scans/
+
 # RL logs and TensorBoard
 logs/
 runs/
+
+# Model weights and large files
+models/
+
+# Data and generated datasets
+data/
+
+# Nmap scan outputs in project root
+nmap_*.xml
+
+# Local/test logs
+chat_execution_log.json
+
+# Mac system files
+.DS_Store
 .tox/
 .nox/
 .coverage
