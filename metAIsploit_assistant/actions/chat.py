@@ -19,7 +19,8 @@ def suppress_stdout_stderr():
 try:
     from pymetasploit3.msfrpc import MsfRpcClient
     print("[DEBUG] Attempting direct msgrpc connection before imports...")
-    client = MsfRpcClient(password='Meta2025SecurePass', username='msf', port=55552, server='metasploit')
+    import os
+    client = MsfRpcClient(os.environ.get('MSGRPC_PASS', 'changeme'), username='msf', port=55552, server='metasploit')
     print("[DEBUG] SUCCESS: Connected to Metasploit RPC at startup!")
 except Exception as e:
     print(f"[DEBUG] ERROR: msgrpc connection failed at startup: {e}")
@@ -60,26 +61,54 @@ from datetime import datetime
 
 
 def setup_model() -> LLMChain:
-    # Callbacks support token-wise streaming
+    import os
+    from langchain.chains import LLMChain
+    from langchain_core.prompts import PromptTemplate
+    from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+    from metAIsploit_assistant.assistant_types import BASE_MODELS
+
+    model_choice = os.environ.get("LLM_MODEL", "phi2").lower()  # 'phi2' or 'secbert'
     callbacks = [StreamingStdOutCallbackHandler()]
 
-    # Fully automate: always use Phi-2, no prompt
-    phi2_model = BASE_MODELS.PHI2
-    print(f"[INFO] Using model: {phi2_model.choice_name} at {phi2_model.file_location}")
+    if model_choice == "secbert":
+        print("[INFO] Using SecBERT (HuggingFace) for LLM tasks.")
+        import warnings
+        from transformers import AutoTokenizer, AutoModelForMaskedLM, pipeline
+        # Suppress FutureWarning for clean_up_tokenization_spaces
+        warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
+        # Suppress model loading warnings for unused weights
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            tokenizer = AutoTokenizer.from_pretrained("jackaduma/SecBERT")
+            model = AutoModelForMaskedLM.from_pretrained("jackaduma/SecBERT")
+        # Use HuggingFace pipeline for fill-mask or text-generation
+        hf_pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, clean_up_tokenization_spaces=True)
 
-    llm = LlamaCpp(
-        model_path=phi2_model.file_location,
-        callbacks=callbacks,
-        verbose=True,
-        n_ctx=2048,  # match model context length
-        temperature=0.7,  # reasonable default
-    )
+        class HuggingFaceLLM:
+            def __init__(self, pipe):
+                self.pipe = pipe
+            def __call__(self, prompt, **kwargs):
+                # Ensure prompt is always a string for HuggingFace pipeline
+                if not isinstance(prompt, str):
+                    prompt = str(prompt)
+                result = self.pipe(prompt, max_new_tokens=64)
+                return result[0]["generated_text"] if result else "[No output]"
+
+        llm = HuggingFaceLLM(hf_pipe)
+    else:
+        print("[INFO] Using Phi-2 (LlamaCpp) for LLM tasks.")
+        from langchain_community.llms import LlamaCpp
+        phi2_model = BASE_MODELS.PHI2
+        llm = LlamaCpp(
+            model_path=phi2_model.file_location,
+            callbacks=callbacks,
+            verbose=True,
+            n_ctx=2048,
+            temperature=0.7,
+        )
 
     template = """You are an expert penetration tester using Metasploit. When asked to scan a target, always generate the Metasploit console command db_nmap (not shell nmap), with all required flags. For example: db_nmap -Pn -T5 --max-retries=1 <target_ip>.\n\nQuestion: {question}\n\nAnswer: Let's think step by step. Always respond with a db_nmap command if the user asks for any network scan."""
-
     prompt = PromptTemplate(template=template, input_variables=["question"])
-
-    # Use the new RunnableSequence API
     return prompt | llm
 
 
@@ -150,15 +179,47 @@ def perform_chat() -> None:
                 target_domain = input("Enter the target domain for this request: ").strip()
                 if target_domain:
                     break
-        # Try to resolve domain to IP
-        while True:
-            try:
+        # Attempt to find real backend/origin IP using crt.sh and DNS before resolving domain
+        import subprocess
+        import json
+        print(f"[INFO] Checking for origin IPs for {target_domain} using crt.sh and DNS...")
+        try:
+            result = subprocess.run([
+                "python3", "scripts/crtsh_dns_leak.py", target_domain
+            ], capture_output=True, text=True, timeout=60)
+            print(result.stdout)
+            # Parse output for POTENTIAL ORIGIN
+            origin_ips = []
+            for line in result.stdout.splitlines():
+                if line.startswith("[POTENTIAL ORIGIN]"):
+                    parts = line.split()
+                    if len(parts) >= 4:
+                        origin_ips.append(parts[-1])
+            if origin_ips:
+                print("[INFO] Potential origin IPs found:")
+                for ip in origin_ips:
+                    print(f"  - {ip}")
+                use_origin = input("Scan a discovered origin IP instead of the default (Cloudflare) IP? [Y/n]: ").strip().lower()
+                if use_origin != "n":
+                    target_ip = origin_ips[0] if len(origin_ips) == 1 else input(f"Enter IP to scan (default: {origin_ips[0]}): ").strip() or origin_ips[0]
+                    print(f"[INFO] Using origin IP {target_ip} for scanning.")
+                else:
+                    target_ip = socket.gethostbyname(target_domain)
+                    print(f"[INFO] Resolved {target_domain} to {target_ip}")
+            else:
                 target_ip = socket.gethostbyname(target_domain)
                 print(f"[INFO] Resolved {target_domain} to {target_ip}")
-                break
-            except Exception as e:
-                print(f"[ERROR] Could not resolve domain: {e}")
-                target_domain = input("Enter a valid target domain: ").strip()
+        except Exception as e:
+            print(f"[WARN] crt.sh DNS leak script failed: {e}")
+            # Fallback to normal DNS resolution
+            while True:
+                try:
+                    target_ip = socket.gethostbyname(target_domain)
+                    print(f"[INFO] Resolved {target_domain} to {target_ip}")
+                    break
+                except Exception as e:
+                    print(f"[ERROR] Could not resolve domain: {e}")
+                    target_domain = input("Enter a valid target domain: ").strip()
 
         llm_response_obj = llm_chain.invoke({'question': prompt_text})
         llm_response = llm_response_obj['text'] if isinstance(llm_response_obj, dict) and 'text' in llm_response_obj else str(llm_response_obj)
