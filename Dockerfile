@@ -1,21 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM python:3.11-slim
-
-# syntax=docker/dockerfile:1.4
-FROM python:3.11-slim
-
-# --- Install system dependencies and Poetry early for caching ---
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    curl \
-    wget \
-    nmap \
-    postgresql \
-    postgresql-client \
-    libpq-dev \
-    expect \
-    && rm -rf /var/lib/apt/lists/*
+FROM metasploit-base:latest
 
 # Install Poetry (cached unless version changes)
 RUN pip install --upgrade poetry
@@ -35,13 +19,17 @@ RUN --mount=type=cache,target=/root/.cache/pypoetry \
     --mount=type=cache,target=/root/.cache/pip \
     poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi \
-    && pip install --no-cache-dir llama-cpp-python
+    && pip install --no-cache-dir llama-cpp-python psycopg2-binary
 
 # --- Now copy the rest of the application code ---
+# Copy the rest of the application
 COPY . .
 
-# Create models directory and set permissions (idempotent)
-RUN mkdir -p /app/models && chmod 755 /app/models
+# Ensure directories exist and set permissions
+RUN mkdir -p /app/docker && \
+    mkdir -p /app/models && \
+    chmod +x /app/docker/entrypoint.sh && \
+    chmod 755 /app/models
 
 # --- End of Dockerfile ---
 # Best practices:
@@ -56,11 +44,20 @@ ENV GPT4ALL_MODEL_PATH=/app/models
 
 # Models will be downloaded on first run and persisted via volume mount
 
-# Make startup script executable
-RUN chmod +x startup.sh
+# Make scripts executable
+RUN chmod +x startup.sh scripts/metasploit_db_service.py
+
+# Set up systemd service for database connection
+RUN mkdir -p /etc/systemd/system/
+COPY docker/metasploit-db.service /etc/systemd/system/
+RUN systemctl enable metasploit-db.service
+
+# Create log directory for the service
+RUN mkdir -p /var/log/metasploit && \
+    chmod 755 /var/log/metasploit
 
 # Expose port for potential web interface
 EXPOSE 8080
 
 # Use startup script as entrypoint
-ENTRYPOINT ["./startup.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "systemctl start metasploit-db && ./startup.sh"]
