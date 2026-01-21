@@ -171,8 +171,8 @@ MIT
 ---
 
 ## Authors
-- [Your Name Here]
-- [Contributors]
+- Net Devs
+
 
 ---
 
