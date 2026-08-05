@@ -4,9 +4,12 @@
 
 Reading about exploits only gets you so far. MetAIsploit Assistant gives you a real Metasploit setup, a vulnerable app to attack, and AI that turns a CVE into a working module — so instead of just studying an exploit, you run it, watch it work, and see why it works.
 
+Think of it as an instant hacker-in-a-box for Metasploit: run one command and you get msfconsole, the database, and a target already wired together and talking to each other. No spending your first three hours getting msfrpcd and Postgres to cooperate — you start from "ready to exploit" instead of "ready to configure."
+
 - **Your own hackable lab.** Metasploit, an AI assistant, and a vulnerable target (DVWA), all wired together in Docker.
 - **AI turns CVEs into working exploits.** Feed it vulnerability data and it generates the Metasploit module.
 - **Practice safely, end to end.** Everything runs isolated and reproducible, so you can break things without breaking anything real.
+- **Zero setup tax.** Metasploit's RPC service, its database, and a target app all preconfigured and pre-connected — the usual first-day yak-shaving is already done for you.
 
 ---
 
