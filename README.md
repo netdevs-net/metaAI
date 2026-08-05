@@ -1,15 +1,22 @@
 # MetAIsploit Assistant
 
-AI-powered Metasploit Automation & Module Generation Platform
+**A hackable lab that turns CVEs into real exploits — practice pentesting safely, hands-on.**
+
+Reading about exploits only gets you so far. MetAIsploit Assistant gives you a real Metasploit setup, a vulnerable app to attack, and AI that turns a CVE into a working module — so instead of just studying an exploit, you run it, watch it work, and see why it works.
+
+- **Your own hackable lab.** Metasploit, an AI assistant, and a vulnerable target (DVWA), all wired together in Docker.
+- **AI turns CVEs into working exploits.** Feed it vulnerability data and it generates the Metasploit module.
+- **Practice safely, end to end.** Everything runs isolated and reproducible, so you can break things without breaking anything real.
 
 ---
 
-## Overview
-MetAIsploit Assistant is an advanced AI-driven automation framework for Metasploit, designed to:
-- **Automate exploitation workflows** using RL (Reinforcement Learning) and LLMs (Large Language Models)
-- **Generate custom Metasploit modules** from CVEs and vulnerability data
-- **Integrate with vulnerable apps (e.g., DVWA) for end-to-end training and testing**
-- **Enable secure, reproducible, and rapid development** via Docker Compose
+## How it works
+
+MetAIsploit Assistant is an AI-driven automation framework for Metasploit:
+- **Automates exploitation workflows** using RL (Reinforcement Learning) and LLMs (Large Language Models)
+- **Generates custom Metasploit modules** from CVEs and vulnerability data
+- **Integrates with vulnerable apps (e.g., DVWA)** for end-to-end training and testing
+- **Runs secure, reproducible, and fast** via Docker Compose
 
 ---
 
