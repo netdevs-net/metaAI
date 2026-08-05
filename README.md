@@ -21,6 +21,35 @@ MetAIsploit Assistant is an AI-driven automation framework for Metasploit:
 - **Integrates with vulnerable apps (e.g., DVWA)** for end-to-end training and testing
 - **Runs secure, reproducible, and fast** via Docker Compose
 
+Everything below is one Docker Compose stack. You talk to the assistant; the assistant talks to Metasploit; Metasploit talks to its database and to the target.
+
+```mermaid
+flowchart LR
+    You(["You"]) --> Assistant["AI Assistant<br/>(reads CVEs, writes exploit modules)"]
+    Assistant <--> MSF["Metasploit<br/>(msfconsole + RPC)"]
+    MSF <--> DB[("PostgreSQL")]
+    MSF --> Target["DVWA<br/>(vulnerable target)"]
+    Target -.result.-> You
+```
+
+## From CVE to first exploit
+
+This is the loop you'll run, over and over, as you learn: pick a CVE, let the AI turn it into a module, fire it at the target, see what happens.
+
+```mermaid
+flowchart TD
+    A["Pick a CVE"] --> B["AI reads the vulnerability writeup"]
+    B --> C["AI generates a Metasploit module"]
+    C --> D["Module loads into Metasploit"]
+    D --> E["Run it against DVWA"]
+    E --> F{"Exploit works?"}
+    F -- "Yes" --> G["That's your first foothold —<br/>see exactly how the exploit worked"]
+    F -- "No" --> H["Tweak the module or the target,<br/>try again"]
+    H --> D
+```
+
+Every "No" is still a lesson: you learn what the exploit needed and didn't get, which is most of what makes an experienced pentester experienced.
+
 ---
 
 ## Features
