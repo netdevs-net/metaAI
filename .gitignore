@@ -210,3 +210,7 @@ examples/models/
 datasets/collected-data/
 models/
 scrap/
+
+# Local env files (note: .env-* uses a hyphen and is NOT covered by .env.*)
+.env-*
+!.env-*.example
