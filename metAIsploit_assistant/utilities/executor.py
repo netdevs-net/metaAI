@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MetasploitExecutor:
-    def __init__(self, host='metasploit', port=55552, user='msf', password='Meta2025SecurePass', connect_on_init=False):
+    def __init__(self, host='metasploit', port=55552, user='msf', password='CHANGEME-local-lab-only', connect_on_init=False):
         self.host = host
         self.port = port
         self.user = user

@@ -9,7 +9,7 @@ done
 
 while true; do
   # Try to connect to DB and check status
-  /usr/src/metasploit-framework/msfconsole -x "db_connect postgresql://msf:Meta2025SecurePass@db:5432/msf; db_status; exit" | grep 'Connection type: postgresql'
+  /usr/src/metasploit-framework/msfconsole -x "db_connect postgresql://msf:CHANGEME-local-lab-only@db:5432/msf; db_status; exit" | grep 'Connection type: postgresql'
   if [ $? -eq 0 ]; then
     echo "Metasploit DB connected!"
     break

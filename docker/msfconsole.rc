@@ -1,10 +1,10 @@
 # msfconsole.rc - Initialize Metasploit with RPC and DB connection
 
 echo "[+] Loading msgrpc for RPC API..."
-load msgrpc ServerHost=0.0.0.0 ServerPort=55552 User=msf Pass=${MSGRPC_PASS:-Meta2025SecurePass}
+load msgrpc ServerHost=0.0.0.0 ServerPort=55552 User=msf Pass=${MSGRPC_PASS:-CHANGEME-local-lab-only}
 
 echo "[+] Connecting to database..."
-db_connect postgresql://msf:Meta2025SecurePass@db:5432/msf
+db_connect postgresql://msf:CHANGEME-local-lab-only@db:5432/msf
 
 echo "[+] Database connection status:"
 db_status

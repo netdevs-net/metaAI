@@ -12,7 +12,7 @@ framework:
     adapter: postgresql
     database: msf
     username: msf
-    password: Meta2025SecurePass
+    password: CHANGEME-local-lab-only
     host: db
     port: 5432
     pool: 200

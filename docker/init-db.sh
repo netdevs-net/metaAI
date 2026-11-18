@@ -12,7 +12,7 @@ mkdir -p /root/.msf4
 
 # Initialize the database connection
 echo "Initializing Metasploit database..."
-/usr/src/metasploit-framework/msfconsole -q -x "db_connect postgresql://msf:Meta2025SecurePass@db:5432/msf; save; exit"
+/usr/src/metasploit-framework/msfconsole -q -x "db_connect postgresql://msf:CHANGEME-local-lab-only@db:5432/msf; save; exit"
 
 # Start the main process
 exec "$@"
