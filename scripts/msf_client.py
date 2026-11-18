@@ -39,7 +39,7 @@ class MSFClient:
         self.host = os.getenv('MSF_HOST', 'metasploit')
         self.port = int(os.getenv('MSF_PORT', '55552'))
         self.username = os.getenv('MSF_USER', 'msf')
-        self.password = os.getenv('MSGRPC_PASS', 'Meta2025SecurePass')
+        self.password = os.getenv('MSGRPC_PASS', 'CHANGEME-local-lab-only')
         self.ssl = os.getenv('MSF_SSL', 'false').lower() == 'true'
         self._connect()
     

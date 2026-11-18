@@ -15,7 +15,7 @@ services:
       - MSF_SERVER=metasploit
       - MSF_PORT=55552
       - MSF_USER=msf
-      - MSF_PASS=${MSGRPC_PASS:-Meta2025SecurePass}
+      - MSF_PASS=${MSGRPC_PASS:-CHANGEME-local-lab-only}
       - MSF_SSL=false
     ports:
       - "8080:8080"
@@ -40,15 +40,16 @@ services:
     tty: true
     stdin_open: true
     env_file:
-      - .env-dev
+      - path: .env-dev
+        required: false
     environment:
       # Database configuration
       - POSTGRES_USER=msf
-      - POSTGRES_PASSWORD=Meta2025SecurePass
+      - POSTGRES_PASSWORD=CHANGEME-local-lab-only
       - POSTGRES_DB=msf
       - POSTGRES_HOST=db
       # Metasploit RPC configuration
-      - MSGRPC_PASS=${MSGRPC_PASS:-Meta2025SecurePass}
+      - MSGRPC_PASS=${MSGRPC_PASS:-CHANGEME-local-lab-only}
       - MSF_DATABASE_CONFIG=/usr/src/metasploit-framework/config/database.yml
     depends_on:
       db:
@@ -83,7 +84,7 @@ services:
     container_name: metasploit-db
     environment:
       POSTGRES_USER: msf
-      POSTGRES_PASSWORD: Meta2025SecurePass
+      POSTGRES_PASSWORD: CHANGEME-local-lab-only
       POSTGRES_DB: msf
       PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:

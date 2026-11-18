@@ -332,3 +332,8 @@ bash scripts/run_tensorboard.sh [logdir] [port]
 # Example: bash scripts/run_tensorboard.sh runs 6006
 ```
 
+## Credentials
+
+This is a local lab. It ships a **deliberately fake** password, `CHANGEME-local-lab-only`, so the stack runs with no setup. It is a placeholder, not a secret, and is allowlisted in `.gitleaks.toml`.
+
+Neither msfrpcd nor Postgres publishes a port, so both are reachable only inside the compose network. If you run this anywhere that is not a throwaway local stack, copy `.env-dev.example` to `.env-dev` and set real values.

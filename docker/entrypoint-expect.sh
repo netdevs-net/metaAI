@@ -13,7 +13,7 @@ expect {
     }
     "postgresql selected, no connection" {
         send_user "DB not connected, trying manual connect...\n"
-        send "db_connect postgresql://msf:Meta2025SecurePass@db:5432/msf\r"
+        send "db_connect postgresql://msf:CHANGEME-local-lab-only@db:5432/msf\r"
         expect "Connection type: postgresql" {
             send_user "DB connected manually!\n"
             # Save the connection for future sessions

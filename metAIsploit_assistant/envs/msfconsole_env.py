@@ -11,7 +11,7 @@ class MSFConsoleEnv(gym.Env):
     """
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, host='metasploit', port=55552, user='msf', password='Meta2025SecurePass', target_ip='172.18.0.100'):
+    def __init__(self, host='metasploit', port=55552, user='msf', password='CHANGEME-local-lab-only', target_ip='172.18.0.100'):
         super(MSFConsoleEnv, self).__init__()
         # Example actions: 0 = scan, 1 = exploit, 2 = get session, 3 = run custom command, 4 = noop
         self.action_space = spaces.Discrete(5)

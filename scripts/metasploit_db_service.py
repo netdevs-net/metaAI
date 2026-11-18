@@ -31,7 +31,7 @@ class MetasploitDBService:
             'adapter': 'postgresql',
             'database': os.getenv('POSTGRES_DB', 'msf'),
             'username': os.getenv('POSTGRES_USER', 'msf'),
-            'password': os.getenv('POSTGRES_PASSWORD', 'Meta2025SecurePass'),
+            'password': os.getenv('POSTGRES_PASSWORD', 'CHANGEME-local-lab-only'),
             'host': os.getenv('POSTGRES_HOST', 'db'),
             'port': os.getenv('POSTGRES_PORT', '5432'),
             'pool': '200',

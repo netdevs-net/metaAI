@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.INFO)
 HOST = 'metasploit'
 PORT = 55552
 USER = 'msf'
-PASS = 'Meta2025SecurePass'
+PASS = 'CHANGEME-local-lab-only'
 
 try:
     print(f"Attempting to connect to msgrpc at {HOST}:{PORT} with user={USER} and pass={PASS}")

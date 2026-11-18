@@ -1,0 +1,18 @@
+# gitleaks configuration for metaAI
+#
+# This repo is a local Metasploit lab. It ships a deliberately fake password so
+# the stack runs out of the box; it is not a secret and never was. Keeping the
+# placeholder obviously fake, and listing it here, stops scanners and reviewers
+# spending time on it.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Lab placeholder credentials, not secrets"
+regexes = [
+  '''CHANGEME-local-lab-only''',
+]
+paths = [
+  '''\.env-dev\.example$''',
+]

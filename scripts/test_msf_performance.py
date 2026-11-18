@@ -18,7 +18,7 @@ from scripts.msf_client import msf as optimized_client
 def setup_basic_client() -> MsfRpcClient:
     """Set up and return a basic pymetasploit3 client."""
     return MsfRpcClient(
-        os.getenv('MSGRPC_PASS', 'Meta2025SecurePass'),
+        os.getenv('MSGRPC_PASS', 'CHANGEME-local-lab-only'),
         server=os.getenv('MSF_HOST', 'metasploit'),
         port=int(os.getenv('MSF_PORT', '55552')),
         username=os.getenv('MSF_USER', 'msf'),
